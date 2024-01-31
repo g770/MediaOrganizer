@@ -32,7 +32,6 @@ public class Organizer {
                 if(matcher.find()) {
                     handleDateFormatMatch(matcher);
                 } else {
-
                     // Try the path
                     var path = f.getAbsolutePath();
                     System.out.println("Looking at path: " + fName);
