@@ -3,10 +3,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 public class ChecksumBuilder {
@@ -38,7 +35,8 @@ public class ChecksumBuilder {
             var checksumBytes = checksum(f);
 
             if (checksumBytes != null) {
-                var checksum = toHexString(checksumBytes);
+                //var checksum = toHexString(checksumBytes);
+                var checksum = String.valueOf((new Random()).nextInt());
                 System.out.println("  Checksum: " + checksum);
 
                 if (!checksumMap.containsKey(checksum)) {

@@ -1,4 +1,8 @@
 import java.io.File;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -16,7 +20,7 @@ public class Organizer {
 
     public void organizeFiles() {
 
-        var pattern = Pattern.compile("([0-9]{4})-([0-9]{2})-([0-9]{2}) ([A-Za-z0-9 ]*)");
+        var pattern = Pattern.compile("([0-9]{4})-([0-9]{2})-([0-9]{2}) ([a-zA-Z0-9 ]*)");
 
         for (Map.Entry<String, List<File>> k : checksumMap.entrySet()) {
 
@@ -24,32 +28,39 @@ public class Organizer {
             for (File f : k.getValue()) {
 
                 // If the file name has a date and name info, use that
-                var fName = f.getName();
-                System.out.println("Looking at file name: " + fName);
+                // Try the path
+                var path = Paths.get(f.getPath()).getParent().toString();
+                System.out.println("Looking at path: " + path);
 
-                var matcher = pattern.matcher(fName);
-
-                if(matcher.find()) {
-                    handleDateFormatMatch(matcher);
-                } else {
-                    // Try the path
-                    var path = f.getAbsolutePath();
-                    System.out.println("Looking at path: " + fName);
-
-                    matcher = pattern.matcher(path);
-                    if (matcher.find()) {
-                        handleDateFormatMatch(matcher);
-                    }
+                var matcher = pattern.matcher(path);
+                if (matcher.find()) {
+                    handleDateFormatMatch(f, matcher);
                 }
-
+                else {
+                    // Path didn't work, look at the file modification date
+                    System.out.println("Using file modification date");
+                    handleFileModificationDate(f);
+                }
             }
-
 
         }
     }
 
-    private static void handleDateFormatMatch(Matcher matcher) {
-        System.out.println("Found a match");
+    private void handleFileModificationDate(File f) {
+        long modified = f.lastModified();
+        var date = LocalDateTime.ofEpochSecond(modified/1000, 0, ZoneOffset.UTC);
+
+        var dateString = new StringBuilder();
+        dateString.append(date.getYear());
+        dateString.append("-");
+        dateString.append(String.format("%02d", date.getMonthValue()));
+        dateString.append("-");
+        dateString.append(String.format("%02d", date.getDayOfMonth()));
+
+        System.out.println("Output: " + dateString + "/" + f.getName());
+    }
+
+    private static void handleDateFormatMatch(File f, Matcher matcher) {
 
         String year = matcher.group(1);
         String month = matcher.group(2);
@@ -59,6 +70,6 @@ public class Organizer {
         // Create subfolder in output directory named Year-Month-Day Description
         // and copy file
         String folderName = year + "-" + month + "-" + day + " " + description;
-        System.out.println("Output folder: " + folderName);
+        System.out.println("Output: " + folderName + "/" + f.getName());
     }
 }

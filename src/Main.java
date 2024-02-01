@@ -8,7 +8,7 @@ import java.util.Map;
 public class Main {
     public static void main(String[] args) {
 
-        var builder = new ChecksumBuilder(List.of("c:\\users\\dwelz\\downloads"));
+        var builder = new ChecksumBuilder(List.of("e:\\orgtestdata"));
 
         System.out.println("Starting...");
         try {
