@@ -1,3 +1,6 @@
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.File;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -9,6 +12,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Organizer {
+
+    private static final Logger logger = LogManager.getLogger(Organizer.class);
 
     private final Map<String, List<File>> checksumMap;
     private final String destinationDirectory;
@@ -30,7 +35,7 @@ public class Organizer {
                 // If the file name has a date and name info, use that
                 // Try the path
                 var path = Paths.get(f.getPath()).getParent().toString();
-                System.out.println("Looking at path: " + path);
+                logger.info("Looking at path: " + path);
 
                 var matcher = pattern.matcher(path);
                 if (matcher.find()) {
@@ -38,7 +43,7 @@ public class Organizer {
                 }
                 else {
                     // Path didn't work, look at the file modification date
-                    System.out.println("Using file modification date");
+                    logger.info("Using file modification date");
                     handleFileModificationDate(f);
                 }
             }
@@ -57,7 +62,7 @@ public class Organizer {
         dateString.append("-");
         dateString.append(String.format("%02d", date.getDayOfMonth()));
 
-        System.out.println("Output: " + dateString + "/" + f.getName());
+        logger.info("Output: " + dateString + "/" + f.getName());
     }
 
     private static void handleDateFormatMatch(File f, Matcher matcher) {
@@ -70,6 +75,6 @@ public class Organizer {
         // Create subfolder in output directory named Year-Month-Day Description
         // and copy file
         String folderName = year + "-" + month + "-" + day + " " + description;
-        System.out.println("Output: " + folderName + "/" + f.getName());
+        logger.info("Output: " + folderName + "/" + f.getName());
     }
 }

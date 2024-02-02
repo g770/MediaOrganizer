@@ -1,3 +1,6 @@
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -7,6 +10,8 @@ import java.util.*;
 import java.util.Map.Entry;
 
 public class ChecksumBuilder {
+
+    private static final Logger logger = LogManager.getLogger(ChecksumBuilder.class);
 
     private final List<String> directories;
 
@@ -23,7 +28,7 @@ public class ChecksumBuilder {
     public void calculateChecksums() throws IOException {
 
         for (String dirName : directories) {
-            System.out.println("Directory: " + dirName);
+            logger.info("Directory: " + dirName);
 
             var dir = Paths.get(dirName);
             Files.walk(dir).forEach(path -> handleFile(path.toFile()));
@@ -31,13 +36,13 @@ public class ChecksumBuilder {
     }
     private void handleFile(File f)  {
         if (!f.isDirectory()) {
-            System.out.println("File: " + f.getAbsolutePath());
+            logger.info("File: " + f.getAbsolutePath());
             var checksumBytes = checksum(f);
 
             if (checksumBytes != null) {
                 //var checksum = toHexString(checksumBytes);
                 var checksum = String.valueOf((new Random()).nextInt());
-                System.out.println("  Checksum: " + checksum);
+                logger.info("  Checksum: " + checksum);
 
                 if (!checksumMap.containsKey(checksum)) {
                     checksumMap.put(checksum, new ArrayList<>());
@@ -70,7 +75,7 @@ public class ChecksumBuilder {
             return md.digest();
 
         } catch (Exception e) {
-            System.out.println("Caught exception: " + e);
+            logger.info("Caught exception: " + e);
             return null;
         }
     }
