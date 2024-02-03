@@ -22,11 +22,7 @@ public class ChecksumBuilder {
 
     public ChecksumBuilder(List<String> directories) {
 
-        if (directories == null) {
-            this.directories = new ArrayList<>();
-        } else {
-            this.directories = directories;
-        }
+        this.directories = Objects.requireNonNullElseGet(directories, ArrayList::new);
     }
 
 
