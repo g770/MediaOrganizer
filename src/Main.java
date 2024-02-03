@@ -23,7 +23,6 @@ public class Main {
             var checksumMap = builder.getChecksumMap();
 
             logger.info("Scan complete");
-            logger.info("Map keys: " + checksumMap.size());
 
             for (Map.Entry<String, List<File>> k : checksumMap.entrySet()) {
                 if (k.getValue().size() > 1) {

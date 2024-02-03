@@ -5,7 +5,6 @@ import java.io.File;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -15,8 +14,15 @@ public class Organizer {
 
     private static final Logger logger = LogManager.getLogger(Organizer.class);
 
+    private static final Pattern pattern = Pattern.compile("([0-9]{4})-([0-9]{2})-([0-9]{2}) ([,'a-zA-Z0-9 ]*)");
+    public static final int MATCHGROUP_YEAR = 1;
+    public static final int MATCHGROUP_MONTH = 2;
+    public static final int MATCHGROUP_DAY = 3;
+    public static final int MATCHGROUP_DESCRIPTION = 4;
+
     private final Map<String, List<File>> checksumMap;
     private final String destinationDirectory;
+
 
     public Organizer(Map<String, List<File>> checksumMap, String destinationDirectory) {
         this.checksumMap = checksumMap;
@@ -25,14 +31,12 @@ public class Organizer {
 
     public void organizeFiles() {
 
-        var pattern = Pattern.compile("([0-9]{4})-([0-9]{2})-([0-9]{2}) ([,'a-zA-Z0-9 ]*)");
-
         for (Map.Entry<String, List<File>> k : checksumMap.entrySet()) {
 
             // Look at each file in the list to see if the path or name looks like a date
             for (File f : k.getValue()) {
 
-                logger.info("Determing output path for file: " + f.getPath());
+                logger.info("Determining output path for file: " + f.getPath());
 
                 // If the file name has a date and name info, use that
                 // Try the path
@@ -72,14 +76,22 @@ public class Organizer {
     private static void handleDateFormatMatch(File f, Matcher matcher) {
 
         logger.info("Using matching date format to make output path");
-        String year = matcher.group(1);
-        String month = matcher.group(2);
-        String day = matcher.group(3);
-        String description = matcher.group(4);
+        String year = matcher.group(MATCHGROUP_YEAR);
+        String month = matcher.group(MATCHGROUP_MONTH);
+        String day = matcher.group(MATCHGROUP_DAY);
+        String description = matcher.group(MATCHGROUP_DESCRIPTION);
 
         // Create subfolder in output directory named Year-Month-Day Description
         // and copy file
-        String folderName = year + "-" + month + "-" + day + " " + description;
+        StringBuilder folderName = new StringBuilder();
+        folderName.append(year);
+        folderName.append("-");
+        folderName.append(month);
+        folderName.append("-");
+        folderName.append(day);
+        folderName.append(" ");
+        folderName.append(description);
+
         logger.info("Output: " + folderName + "/" + f.getName());
     }
 }

@@ -3,32 +3,37 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.util.*;
-import java.util.Map.Entry;
 
 public class ChecksumBuilder {
 
     private static final Logger logger = LogManager.getLogger(ChecksumBuilder.class);
+    public static final int BYTES_TO_READ = 1024;
 
     private final List<String> directories;
 
     public Map<String, List<File>> getChecksumMap() {
-        return checksumMap;
+        return this.checksumMap;
     }
 
     private final Map<String, List<File>> checksumMap = new HashMap<>();
 
     public ChecksumBuilder(List<String> directories) {
-        this.directories = directories;
+
+        if (directories == null) {
+            this.directories = new ArrayList<>();
+        } else {
+            this.directories = directories;
+        }
     }
+
 
     public void calculateChecksums() throws IOException {
 
         for (String dirName : directories) {
-            logger.info("Directory: " + dirName);
+            logger.info("Iterating over files in directory: " + dirName);
 
             var dir = Paths.get(dirName);
             Files.walk(dir).forEach(path -> handleFile(path.toFile()));
@@ -50,6 +55,8 @@ public class ChecksumBuilder {
 
                 checksumMap.get(checksum).add(f);
             }
+        } else {
+            logger.info("Skipped because it is a directory: " + f.getAbsolutePath());
         }
     }
 
@@ -66,7 +73,7 @@ public class ChecksumBuilder {
             var md = MessageDigest.getInstance("MD5");
 
             var fis = new FileInputStream(f);
-            var buffer = new byte[1024];
+            var buffer = new byte[BYTES_TO_READ];
             int nread;
             while ((nread = fis.read(buffer)) != -1) {
                 md.update(buffer, 0, nread);
@@ -75,7 +82,7 @@ public class ChecksumBuilder {
             return md.digest();
 
         } catch (Exception e) {
-            logger.info("Caught exception: " + e);
+            logger.info("Caught exception during checksum: " + e);
             return null;
         }
     }
