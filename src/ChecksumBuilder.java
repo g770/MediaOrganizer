@@ -41,8 +41,8 @@ public class ChecksumBuilder {
             var checksumBytes = checksum(f);
 
             if (checksumBytes != null) {
-                //var checksum = toHexString(checksumBytes);
-                var checksum = String.valueOf((new Random()).nextInt());
+                var checksum = toHexString(checksumBytes);
+                //var checksum = String.valueOf((new Random()).nextInt());
                 logger.info("  Checksum: " + checksum);
 
                 if (!checksumMap.containsKey(checksum)) {
