@@ -15,6 +15,15 @@ public class Main {
     private static final List<String> inputDirs = new ArrayList<>(List.of("e:\\orgtestdata", "e:\\orgtestdata2"));
     public static void main(String[] args) {
 
+        var organizer = new Organizer("e:\\orgtestdata_output", "e:\\organized_output");
+
+        try {
+            organizer.organizeFiles();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        /*
         var builder = new ChecksumBuilder(inputDirs);
 
         logger.info("Starting...");
@@ -31,7 +40,7 @@ public class Main {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
+*/
     }
 
 }

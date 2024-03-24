@@ -2,6 +2,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -20,43 +23,69 @@ public class Organizer {
     public static final int MATCHGROUP_DAY = 3;
     public static final int MATCHGROUP_DESCRIPTION = 4;
 
-    private final Map<String, List<File>> checksumMap;
     private final String destinationDirectory;
 
+    private final String inputDirectory;
 
-    public Organizer(Map<String, List<File>> checksumMap, String destinationDirectory) {
-        this.checksumMap = checksumMap;
+    public Organizer(String inputDirectory, String destinationDirectory) {
+        this.inputDirectory = inputDirectory;
         this.destinationDirectory = destinationDirectory;
     }
 
-    public void organizeFiles() {
+    public void organizeFiles() throws IOException {
 
-        for (Map.Entry<String, List<File>> k : checksumMap.entrySet()) {
+        // Convert directory name to a path object
+        var dir = Paths.get(this.inputDirectory);
 
-            // Look at each file in the list to see if the path or name looks like a date
-            for (File f : k.getValue()) {
+        // Iterate over each file in the input directory
+        // and determine where to copy it
+        Files.walk(dir).forEach(path -> handleFile(path.toFile()));
 
-                logger.info("Determining output path for file: " + f.getPath());
+    }
 
-                // If the file name has a date and name info, use that
-                // Try the path
-                var path = Paths.get(f.getPath()).getParent().toString();
+    private void handleFile(File file) {
 
-                var matcher = pattern.matcher(path);
-                if (matcher.find()) {
-                    handleDateFormatMatch(f, matcher);
-                }
-                else {
-                    // Path didn't work, look at the file modification date
-                    logger.info("Using file modification date");
-                    handleFileModificationDate(f);
-                }
+        if (!file.isDirectory()) {
+            logger.info("Determining output path for file: " + file.getPath());
+
+            // First check if the path matches the expected date format,
+            // otherwise use the file modification date
+            var path = Paths.get(file.getPath()).getParent().toString();
+
+            String outputDir;
+            var matcher = pattern.matcher(path);
+            if (matcher.find()) {
+                outputDir = handleDateFormatMatch(file, matcher);
+            } else {
+                // Path didn't work, look at the file modification date
+                logger.info("Using file modification date");
+                outputDir = handleFileModificationDate(file);
             }
 
+            logger.info("Copying file {} to: {}", file.getName(), outputDir);
+
+            // Copy the file to the output directory
+            createDirectories(outputDir);
+
+            // Add the file name to the output directory
+            outputDir += File.separator + file.getName();
+
+            try {
+                Files.copy(file.toPath(), Path.of(outputDir));
+            } catch (IOException e) {
+                logger.error("Failed to copy: " + file.getPath() + " to " + outputDir + ": " + e.getMessage());
+            }
         }
     }
 
-    private void handleFileModificationDate(File f) {
+    private void createDirectories(String finalPath) {
+        try {
+            Files.createDirectories(Path.of(finalPath));
+        } catch (IOException e) {
+        }
+    }
+
+    private String handleFileModificationDate(File f) {
 
         logger.info("Using modification time to make output path");
 
@@ -71,9 +100,11 @@ public class Organizer {
         dateString.append(String.format("%02d", date.getDayOfMonth()));
 
         logger.info("Output: " + dateString + "/" + f.getName());
+
+        return dateString.toString();
     }
 
-    private static void handleDateFormatMatch(File f, Matcher matcher) {
+    private String handleDateFormatMatch(File f, Matcher matcher) {
 
         logger.info("Using matching date format to make output path");
         String year = matcher.group(MATCHGROUP_YEAR);
@@ -84,6 +115,8 @@ public class Organizer {
         // Create subfolder in output directory named Year-Month-Day Description
         // and copy file
         StringBuilder folderName = new StringBuilder();
+        folderName.append(destinationDirectory);
+        folderName.append(File.separator);
         folderName.append(year);
         folderName.append("-");
         folderName.append(month);
@@ -92,6 +125,8 @@ public class Organizer {
         folderName.append(" ");
         folderName.append(description);
 
-        logger.info("Output: " + folderName + "/" + f.getName());
+        logger.info("Output: " + folderName + File.separator + f.getName());
+
+        return folderName.toString();
     }
 }

@@ -17,6 +17,9 @@
         <Logger name="ChecksumBuilder" level="trace" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
+        <Logger name="DeduplicateFiles" level="trace" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
         <Logger name="Organizer" level="trace" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
