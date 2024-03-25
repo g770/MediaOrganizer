@@ -35,7 +35,7 @@ public class ChecksumBuilder implements IChecksumBuilder {
     public void calculateChecksums() throws IOException {
 
         for (String dirName : directories) {
-            logger.info("Iterating over files in directory: " + dirName);
+            logger.info("Iterating over files in directory: {}", dirName);
 
             // Convert directory name to a path object
             var dir = Paths.get(dirName);
@@ -47,13 +47,13 @@ public class ChecksumBuilder implements IChecksumBuilder {
 
     private void handleFile(String inputDirName, File f)  {
         if (!f.isDirectory()) {
-            logger.info("File: " + f.getAbsolutePath());
+            logger.info("File: {}", f.getAbsolutePath());
             var checksumBytes = checksum(f);
 
             if (checksumBytes != null) {
                 var checksum = toHexString(checksumBytes);
                 //var checksum = String.valueOf((new Random()).nextInt());
-                logger.info("  Checksum: " + checksum);
+                logger.info("Checksum: {}", checksum);
 
                 if (!checksumMap.containsKey(checksum)) {
                     checksumMap.put(checksum, new ArrayList<>());
@@ -62,7 +62,7 @@ public class ChecksumBuilder implements IChecksumBuilder {
                 checksumMap.get(checksum).add(new SimpleEntry<String, File>(inputDirName, f));
             }
         } else {
-            logger.info("Skipped because it is a directory: " + f.getAbsolutePath());
+            logger.info("Skipped because it is a directory: {}", f.getAbsolutePath());
         }
     }
 
@@ -89,7 +89,7 @@ public class ChecksumBuilder implements IChecksumBuilder {
             return md.digest();
 
         } catch (Exception e) {
-            logger.info("Caught exception during checksum: " + e);
+            logger.info("Caught exception during checksum: {}", e.getMessage());
             return null;
         }
     }

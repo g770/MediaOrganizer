@@ -50,7 +50,7 @@ public class DeduplicateFiles {
                 // Ensure the directory tree exists before copying the file
                 createDirectories(finalPath);
 
-                logger.info("Copying src:dest " + path + ":" + finalPath);
+                logger.info("Copying src:dest {} : {}", path, finalPath);
                 try {
                     Files.copy(Path.of(path), Path.of(finalPath));
                 } catch (IOException e) {
@@ -63,7 +63,7 @@ public class DeduplicateFiles {
     private void logSkippedFiles(List<AbstractMap.SimpleEntry<String, File>> files) {
 
         for(var f : files) {
-            logger.info("Skipping file: " + f.getValue().getPath());
+            logger.info("Skipping file: {}", f.getValue().getPath());
         }
 
     }

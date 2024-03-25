@@ -44,7 +44,7 @@ public class Organizer {
     private void handleFile(File file) {
 
         if (!file.isDirectory()) {
-            logger.info("Determining output path for file: " + file.getPath());
+            logger.info("Determining output path for file: {}", file.getPath());
 
             // First check if the path matches the expected date format,
             // otherwise use the file modification date
@@ -71,7 +71,7 @@ public class Organizer {
             try {
                 Files.copy(file.toPath(), Path.of(outputDir));
             } catch (IOException e) {
-                logger.error("Failed to copy: " + file.getPath() + " to " + outputDir + ": " + e.getMessage());
+                logger.error("Failed to copy: {} to {}: {}", file.getPath(), outputDir, e.getMessage());
             }
         }
     }
@@ -99,7 +99,7 @@ public class Organizer {
         folderName.append("-");
         folderName.append(String.format("%02d", date.getDayOfMonth()));
 
-        logger.info("Output: " + folderName + "/" + f.getName());
+        logger.info("Output: {}{}{}", folderName, File.separator, f.getName());
 
         return folderName.toString();
     }
@@ -125,7 +125,7 @@ public class Organizer {
         folderName.append(" ");
         folderName.append(description);
 
-        logger.info("Output: " + folderName + File.separator + f.getName());
+        logger.info("Output: {}{}{}", folderName, File.separator, f.getName());
 
         return folderName.toString();
     }
