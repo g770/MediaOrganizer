@@ -8,8 +8,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -92,16 +90,18 @@ public class Organizer {
         long modified = f.lastModified();
         var date = LocalDateTime.ofEpochSecond(modified/1000, 0, ZoneOffset.UTC);
 
-        var dateString = new StringBuilder();
-        dateString.append(date.getYear());
-        dateString.append("-");
-        dateString.append(String.format("%02d", date.getMonthValue()));
-        dateString.append("-");
-        dateString.append(String.format("%02d", date.getDayOfMonth()));
+        var folderName = new StringBuilder();
+        folderName.append(destinationDirectory);
+        folderName.append(File.separator);
+        folderName.append(date.getYear());
+        folderName.append("-");
+        folderName.append(String.format("%02d", date.getMonthValue()));
+        folderName.append("-");
+        folderName.append(String.format("%02d", date.getDayOfMonth()));
 
-        logger.info("Output: " + dateString + "/" + f.getName());
+        logger.info("Output: " + folderName + "/" + f.getName());
 
-        return dateString.toString();
+        return folderName.toString();
     }
 
     private String handleDateFormatMatch(File f, Matcher matcher) {
