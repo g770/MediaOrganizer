@@ -22,7 +22,7 @@
             <AppenderRef ref="Console"/>
             <AppenderRef ref="FileOutput"/>
         </Logger>
-        <Logger name="Organizer" level="trace" additivity="false">
+        <Logger name="DateOrganizer" level="trace" additivity="false">
             <AppenderRef ref="Console"/>
             <AppenderRef ref="FileOutput"/>
         </Logger>

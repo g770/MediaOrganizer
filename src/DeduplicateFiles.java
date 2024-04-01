@@ -9,16 +9,32 @@ import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Class responsible for copying and deduplicating files based on their checksums.
+ */
 public class DeduplicateFiles {
 
+    // Directory where the deduplicated files will be copied to
     private final String outputDir;
 
+    // Logger for logging information and error messages
     private static final Logger logger = LogManager.getLogger(DeduplicateFiles.class);
 
+    /**
+     * Constructor for the DeduplicateFiles class.
+     *
+     * @param outputDir Directory where the deduplicated files will be copied to.
+     */
     public DeduplicateFiles(String outputDir) {
         this.outputDir = outputDir;
     }
 
+    /**
+     * Copies and deduplicates files based on their checksums.
+     *
+     * @param checksumMap Map where the key is a checksum (String) and the value is a List of SimpleEntry objects.
+     * Each SimpleEntry contains the directory name (String) and the corresponding File.
+     */
     public void copyAndDeduplicateFiles(Map<String, List<AbstractMap.SimpleEntry<String, File>>> checksumMap) {
 
         // Iterate over each set of identical files
@@ -60,6 +76,11 @@ public class DeduplicateFiles {
         }
     }
 
+    /**
+     * Logs the files that were skipped during the deduplication process.
+     *
+     * @param files List of files that were skipped.
+     */
     private void logSkippedFiles(List<AbstractMap.SimpleEntry<String, File>> files) {
 
         for(var f : files) {
@@ -68,6 +89,11 @@ public class DeduplicateFiles {
 
     }
 
+    /**
+     * Creates the necessary directories for the output path.
+     *
+     * @param finalPath The final output path where the file will be copied to.
+     */
     private void createDirectories(String finalPath) {
         try {
             // Create the directory tree for the output path
