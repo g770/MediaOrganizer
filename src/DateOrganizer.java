@@ -8,6 +8,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Random;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,15 +36,30 @@ public class DateOrganizer implements IFileOrganizer {
     // Input directory containing files to be organized
     private final String inputDirectory;
 
+    private final Consumer<String> doCreateDirectories;
+    private final BiConsumer<File, String> doFileCopy;
+
+    // Lambdas to use for the preview mode
+
     /**
      * Constructor for the DateOrganizer class.
      *
      * @param inputDirectory Directory containing files to be organized.
      * @param destinationDirectory Directory where the organized files will be placed.
      */
-    public DateOrganizer(String inputDirectory, String destinationDirectory) {
+    public DateOrganizer(String inputDirectory, String destinationDirectory, boolean previewMode) {
         this.inputDirectory = inputDirectory;
         this.destinationDirectory = destinationDirectory;
+
+        if (previewMode) {
+            logger.info("Running in preview mode");
+            this.doCreateDirectories = (x) -> {};
+            this.doFileCopy = (x, y) -> {};
+        } else {
+            this.doCreateDirectories = this::createDirectories;
+            this.doFileCopy = this::copyFiles;
+
+        }
     }
 
     /**
@@ -86,8 +104,8 @@ public class DateOrganizer implements IFileOrganizer {
             }
 
 
-            // Copy the file to the output directory
-            createDirectories(outputDir);
+            // Create the output directories, taking preview mode into account
+            this.doCreateDirectories.accept(outputDir);
 
             // Add the file name to the output directory
             var finalFinalPath = outputDir + File.separator + file.getName();
@@ -99,13 +117,18 @@ public class DateOrganizer implements IFileOrganizer {
                 finalFinalPath = handleExistingFile(file, outputDir);
             }
 
-            logger.info("Copying file {} to: {}", file.getName(), outputDir);
+            logger.info("Copying file {} to: {}", file.getName(), finalFinalPath);
 
-            try {
-                Files.copy(file.toPath(), Path.of(finalFinalPath));
-            } catch (IOException e) {
-                logger.error("Failed to copy: {} to {}: {}", file.getPath(), finalFinalPath, e.getMessage());
-            }
+            // Copy the file, taking preview mode into account
+            this.doFileCopy.accept(file, finalFinalPath);
+        }
+    }
+
+    private void copyFiles(File file, String finalFinalPath) {
+        try {
+            Files.copy(file.toPath(), Path.of(finalFinalPath));
+        } catch (IOException e) {
+            logger.error("Failed to copy: {} to {}: {}", file.getPath(), finalFinalPath, e.getMessage());
         }
     }
 
@@ -119,8 +142,10 @@ public class DateOrganizer implements IFileOrganizer {
      */
     private String handleExistingFile(File file, String outputDir) {
         String finalFinalPath;
-        // If the file already exists, add an epoch timestamp to the front of the filename
-        finalFinalPath = outputDir + File.separator + System.currentTimeMillis() + "-" + file.getName();
+        var rnd = new Random();
+
+        // If the file already exists, add an epoch timestamp and random number to the front of the filename
+        finalFinalPath = outputDir + File.separator + System.currentTimeMillis() + rnd.nextInt(Integer.MAX_VALUE) + "-" + file.getName();
         return finalFinalPath;
     }
 

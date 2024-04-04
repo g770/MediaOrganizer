@@ -13,11 +13,13 @@ public class Main {
         private final String action;
         private final List<String> inputDirs;
         private final String outputDir;
+        private final boolean preview;
 
-        public CommandLineArguments(String action, List<String> inputDirs, String outputDir) {
+        public CommandLineArguments(String action, List<String> inputDirs, String outputDir, boolean preview) {
             this.action = action;
             this.inputDirs = inputDirs;
             this.outputDir = outputDir;
+            this.preview = preview;
         }
 
         public String getAction() {
@@ -31,48 +33,64 @@ public class Main {
         public String getOutputDir() {
             return outputDir;
         }
+
+        public boolean isPreview() {
+            return preview;
+        }
+        public boolean isValid() {
+            if (action == null || (!action.equals("deduplicate") && !action.equals("organize"))) {
+                return false;
+            }
+            if (inputDirs == null || inputDirs.isEmpty()) {
+                return false;
+            }
+            if (outputDir == null || outputDir.isEmpty()) {
+                return false;
+            }
+            return true;
+        }
     }
     private static final Logger logger = LogManager.getLogger(Main.class);
 
-    private static final String outputDir = "e:\\orgtestdata_output";
-
-    private static final List<String> inputDirs = new ArrayList<>(List.of("e:\\orgtestdata", "e:\\orgtestdata2"));
     public static void main(String[] args) {
 
         var cmdArgs = processArgs(args);
+        if (cmdArgs == null || !cmdArgs.isValid()) {
+            printHelp();
 
-        var organizer = new DateOrganizer("e:\\orgtestdata_output", "e:\\organized_output");
+        }
+        else {
+            try {
+                if (cmdArgs.isPreview()) {
+                    logger.info("Running in preview mode. No files will be modified.");
+                }
 
-        try {
-            organizer.organizeFiles();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+                if (cmdArgs.getAction().equals("deduplicate")) {
+                    var checksumBuilder = new ChecksumBuilder(cmdArgs.getInputDirs());
+                    checksumBuilder.calculateChecksums();
+                    var checksumMap = checksumBuilder.getChecksumMap();
+                    var deduplicator = new DeduplicateFiles(cmdArgs.getOutputDir(), cmdArgs.isPreview());
+                    deduplicator.copyAndDeduplicateFiles(checksumMap);
+
+                } else if (cmdArgs.getAction().equals("organize")) {
+                    for (String inputDir : cmdArgs.getInputDirs()) {
+                        var dateOrganizer = new DateOrganizer(inputDir, cmdArgs.getOutputDir(), cmdArgs.isPreview());
+                        dateOrganizer.organizeFiles();
+                    }
+                }
+            } catch (IOException e) {
+                logger.error("An error occurred while processing files: {}", e.getMessage());
+            }
         }
 
-        /*
-        var builder = new ChecksumBuilder(inputDirs);
 
-        logger.info("Starting...");
-        try {
-            builder.calculateChecksums();
-
-            var checksumMap = builder.getChecksumMap();
-            logger.info("Scan complete");
-
-            var dedup = new DeduplicateFiles(outputDir);
-            dedup.copyAndDeduplicateFiles(checksumMap);
-
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-*/
     }
 
     public static CommandLineArguments processArgs(String[] args) {
         String action = null;
         List<String> inputDirs = new ArrayList<>();
         String outputDir = null;
+        boolean preview = false;
 
         for (int i = 0; i < args.length; i++) {
             switch (args[i]) {
@@ -91,6 +109,9 @@ public class Main {
                         outputDir = args[++i];
                     }
                     break;
+                case "-p":
+                    preview = true;
+                    break;
                 case "-h":
                     printHelp();
                     return null;
@@ -99,15 +120,16 @@ public class Main {
             }
         }
 
-        return new CommandLineArguments(action, inputDirs, outputDir);
+        return new CommandLineArguments(action, inputDirs, outputDir, preview);
     }
 
     public static void printHelp() {
-        logger.info("Usage: java fileOrganizer -a <action> -o <outputDir> -i <inputDir1> -i <inputDir2> ...");
+        logger.info("Usage: java -j PhotoOrganizer.jar -a <action> -o <outputDir> -i <inputDir1> -i <inputDir2> ...");
         logger.info("Options:");
         logger.info("\t-a <action>\t\tThe action to perform. Can be either 'organize' or 'deduplicate'.");
         logger.info("\t-o <outputDir>\t\tThe output directory.");
         logger.info("\t-i <inputDir>\t\tThe input directory. This option can be specified multiple times for multiple input directories.");
+        logger.info("\t-p\t\t\tPreview mode. Do not perform any file operations, only print what would be done.");
         logger.info("\t-h\t\t\tPrint this help message.");
     }
 }

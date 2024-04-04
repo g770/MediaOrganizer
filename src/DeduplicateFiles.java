@@ -8,6 +8,8 @@ import java.nio.file.Path;
 import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * Class responsible for copying and deduplicating files based on their checksums.
@@ -19,14 +21,26 @@ public class DeduplicateFiles {
 
     // Logger for logging information and error messages
     private static final Logger logger = LogManager.getLogger(DeduplicateFiles.class);
+    private final Consumer<String> doCreateDirectories;
+    private final BiConsumer<String, String> doFileCopy;
 
     /**
      * Constructor for the DeduplicateFiles class.
      *
      * @param outputDir Directory where the deduplicated files will be copied to.
      */
-    public DeduplicateFiles(String outputDir) {
+    public DeduplicateFiles(String outputDir, boolean previewMode) {
         this.outputDir = outputDir;
+
+        if (previewMode) {
+            logger.info("Running in preview mode");
+            this.doCreateDirectories = (x) -> {};
+            this.doFileCopy = (x, y) -> {};
+
+        } else {
+            this.doCreateDirectories = this::createDirectories;
+            this.doFileCopy = this::copyFiles;
+        }
     }
 
     /**
@@ -64,15 +78,19 @@ public class DeduplicateFiles {
                 var finalPath = outputDir + File.separator + substr;
 
                 // Ensure the directory tree exists before copying the file
-                createDirectories(finalPath);
+                this.doCreateDirectories.accept(finalPath);
 
                 logger.info("Copying src:dest {} : {}", path, finalPath);
-                try {
-                    Files.copy(Path.of(path), Path.of(finalPath));
-                } catch (IOException e) {
-                    logger.error("Failed to copy: " + path + " to " + finalPath + ": " + e.getMessage());
-                }
+                this.doFileCopy.accept(path, finalPath);
             }
+        }
+    }
+
+    private void copyFiles(String path, String finalPath) {
+        try {
+            Files.copy(Path.of(path), Path.of(finalPath));
+        } catch (IOException e) {
+            logger.error("Failed to copy: " + path + " to " + finalPath + ": " + e.getMessage());
         }
     }
 
