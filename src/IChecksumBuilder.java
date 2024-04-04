@@ -20,7 +20,6 @@
  * SOFTWARE.
  */
 
-package com.sonorantech.mediaorganizer;
 
 
 import java.io.File;

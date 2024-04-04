@@ -20,16 +20,20 @@
  * SOFTWARE.
  */
 
+
+
 import org.junit.jupiter.api.*;
 
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.*;
 
-public class ChecksumBuilderTest {
+public class DeduplicateFilesTest {
 
     private ChecksumBuilder checksumBuilderNoDuplicates;
     private ChecksumBuilder checksumBuilderWithDuplicates;
@@ -38,11 +42,16 @@ public class ChecksumBuilderTest {
 
     private static final int fileToCreate = 50;
     private static final int directoriesToCreate = 2;
+    private Path outputDir;
 
     @BeforeEach
     void setUp() throws IOException {
         createNoDuplicatesChecksumBuilder();
         createChecksumBuilderWithDuplicates();
+
+        // Create the output directory
+        Path dir = Files.createTempDirectory("deduplicatetest-outputdir");
+        this.outputDir = dir;
     }
 
 
@@ -51,10 +60,10 @@ public class ChecksumBuilderTest {
         files = new ArrayList<>();
 
         // Create test directories and files
-            Path dir = Files.createTempDirectory("checksumBuilderDuplicatesTestDirectory");
-            directories.add(dir.toString());
+        Path dir = Files.createTempDirectory("checksumBuilderDuplicatesTestDirectory");
+        directories.add(dir.toString());
 
-            // All the files will be same
+        // All the files will be same
         var rnd = new SecureRandom();
         var fileContents = new byte[1024 * 1024];
         rnd.nextBytes(fileContents);
@@ -100,49 +109,50 @@ public class ChecksumBuilderTest {
         for (String dir : directories) {
             Files.deleteIfExists(Paths.get(dir));
         }
+
+        // Remove all files in the outputDir and delete the directory
+        Files.walk(outputDir)
+                .sorted(Comparator.reverseOrder())
+                .map(Path::toFile)
+                .forEach(File::delete);
     }
 
-    @Test
-    void getChecksumMapNotNull() {
-        assertNotNull(checksumBuilderNoDuplicates.getChecksumMap());
-        assertNotNull(checksumBuilderWithDuplicates.getChecksumMap());
-    }
-
 
     @Test
-    void getChecksumNoDuplicatesMapSize() {
+    void copyAndDeduplicateFiles1() {
+
         var map = checksumBuilderNoDuplicates.getChecksumMap();
-        assertEquals(fileToCreate * directoriesToCreate, map.entrySet().size());
+        var deduplicateFiles = new DeduplicateFiles(this.outputDir.toString(), false);
+        deduplicateFiles.copyAndDeduplicateFiles(map);
+
+        // If there are no duplicates the count of files in the output directory should be the same as the map
+        Assertions.assertEquals(map.entrySet().size(), countFilesInDirectory(this.outputDir));
     }
 
     @Test
-    void getChecksumWithDuplicatesMapSize() {
+    void copyAndDeduplicateFiles2() {
+
         var map = checksumBuilderWithDuplicates.getChecksumMap();
-        assertEquals(1, map.entrySet().size());
+        var deduplicateFiles = new DeduplicateFiles(this.outputDir.toString(), false);
+        deduplicateFiles.copyAndDeduplicateFiles(map);
+
+        Assertions.assertEquals(1, countFilesInDirectory(this.outputDir));
     }
 
     @Test
-    void getChecksumNoDuplicates() {
+    void copyAndDeduplicateFilesPreviewMode() {
 
-        // There should be no duplicates in checksumBuilder1
         var map = checksumBuilderNoDuplicates.getChecksumMap();
+        var deduplicateFiles = new DeduplicateFiles(this.outputDir.toString(), true);
+        deduplicateFiles.copyAndDeduplicateFiles(map);
 
-        // Iterate over each entry in the map and assert the size of the value is 1
-        for (var kvp : map.entrySet()) {
-            assertEquals(1, kvp.getValue().size());
-        }
+        // Output dir should be empty since we are in preview mode
+        Assertions.assertEquals(0, countFilesInDirectory(this.outputDir));
     }
 
-    @Test
-    void getChecksumWithDuplicates() {
-
-        // There should be no duplicates in checksumBuilder1
-        var map = checksumBuilderWithDuplicates.getChecksumMap();
-
-        // Iterate over each entry in the map and assert the size of the value is 1
-        for (var kvp : map.entrySet()) {
-            assertEquals(fileToCreate, kvp.getValue().size());
-        }
+    private int countFilesInDirectory(Path outputDir) {
+        return (int) Arrays.stream(outputDir.toFile().listFiles()).filter(File::isFile).count();
     }
+
 
 }

@@ -20,9 +20,6 @@
  * SOFTWARE.
  */
 
-package com.sonorantech.mediaorganizer;
-
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
