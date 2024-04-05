@@ -1,0 +1,197 @@
+/*
+ * Copyright (c) [2024] [SonoranTech]
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+
+
+import org.junit.jupiter.api.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.*;
+
+
+public class DateOrganizerTest {
+
+
+    private Path outputDir;
+    private Path inputDir;
+
+    @BeforeEach
+    void setUp() throws IOException {
+
+        // Create the input directory
+        this.inputDir = Files.createTempDirectory("organizertest-inputdir");
+
+        // Create the output directory
+        this.outputDir = Files.createTempDirectory("organizertest-outputdir");
+    }
+
+
+    @AfterEach
+    void tearDown() throws IOException {
+
+        Files.walk(inputDir)
+                .sorted(Comparator.reverseOrder())
+                .map(Path::toFile)
+                .forEach(File::delete);
+
+        Files.walk(outputDir)
+                .sorted(Comparator.reverseOrder())
+                .map(Path::toFile)
+                .forEach(File::delete);
+    }
+
+
+    @Test
+    void testDateFormat1() {
+
+        // Create a file with a date format in its path
+        Path inputFile = null;
+        try {
+            Files.createDirectories(Paths.get(inputDir + File.separator + "2024-01-10 Description"));
+            inputFile = Files.createFile(Path.of(inputDir + File.separator + "2024-01-10 Description" + File.separator + "TestFile.txt"));
+
+
+        var rnd = new SecureRandom();
+        var fileContents = new byte[1024 * 1024];
+        rnd.nextBytes(fileContents);
+        Files.write(inputFile, fileContents);
+
+        var organizer = new DateOrganizer(inputDir.toString(), outputDir.toString(), false);
+
+            organizer.organizeFiles();
+
+            // Check if the file was moved to the correct directory
+            var expectedFile = Path.of(outputDir + File.separator + "2024-01-10 Description" + File.separator + inputFile.getFileName());
+            var result = Files.exists(expectedFile);
+            Assertions.assertTrue(result);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    @Test
+    void testDateFormat2() {
+
+        // Create a file with a date format in its path, without the description part
+        Path inputFile = null;
+        try {
+            Files.createDirectories(Paths.get(inputDir + File.separator + "2024-01-10"));
+            inputFile = Files.createFile(Path.of(inputDir + File.separator + "2024-01-10" + File.separator + "TestFile.txt"));
+
+
+            var rnd = new SecureRandom();
+            var fileContents = new byte[1024 * 1024];
+            rnd.nextBytes(fileContents);
+            Files.write(inputFile, fileContents);
+
+            var organizer = new DateOrganizer(inputDir.toString(), outputDir.toString(), false);
+
+            organizer.organizeFiles();
+
+            // Check if the file was moved to the correct directory
+            var expectedFile = Path.of(outputDir + File.separator + "2024-01-10" + File.separator + inputFile.getFileName());
+            var result = Files.exists(expectedFile);
+
+            // This should be false, in this case the pattern would not match and modification date would be used
+            Assertions.assertFalse(result);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    @Test
+    void testDateFormat3() {
+
+        // Create a file in a directory tree, but put the date format in the file name
+        Path inputFile = null;
+        try {
+            Files.createDirectories(Paths.get(inputDir + File.separator + "My Nifty Photos"));
+            inputFile = Files.createFile(Path.of(inputDir + File.separator + "My Nifty Photos" + File.separator + "2023-03-10 Vacation.jpg"));
+
+
+            var rnd = new SecureRandom();
+            var fileContents = new byte[1024 * 1024];
+            rnd.nextBytes(fileContents);
+            Files.write(inputFile, fileContents);
+
+            var organizer = new DateOrganizer(inputDir.toString(), outputDir.toString(), false);
+
+            organizer.organizeFiles();
+
+            // Check if the file was moved to the correct directory
+            var expectedFile = Path.of(outputDir + File.separator + "2023-03-10" + File.separator + inputFile.getFileName());
+            var result = Files.exists(expectedFile);
+
+            // This should be false, in this case the pattern would not match and modification date would be used
+            Assertions.assertFalse(result);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    void testDateFormat4() {
+
+        // Create a file in a directory tree, but put the date format in the file name
+        Path inputFile = null;
+        try {
+            Files.createDirectories(Paths.get(inputDir + File.separator + "My Nifty Photos"));
+            inputFile = Files.createFile(Path.of(inputDir + File.separator + "My Nifty Photos" + File.separator + "2023-03-10 Vacation.jpg"));
+
+
+            var rnd = new SecureRandom();
+            var fileContents = new byte[1024 * 1024];
+            rnd.nextBytes(fileContents);
+            Files.write(inputFile, fileContents);
+
+            var organizer = new DateOrganizer(inputDir.toString(), outputDir.toString(), false);
+
+            organizer.organizeFiles();
+
+            // This should be organized by modification date
+            // Get the current date, the code grabs the modification date in utc
+            var currentDate = LocalDateTime.now(ZoneOffset.UTC);
+            var expectedFile = Path.of(outputDir + File.separator + currentDate.getYear() + "-" + String.format("%02d", currentDate.getMonthValue()) + "-" + String.format("%02d", currentDate.getDayOfMonth()) + File.separator + inputFile.getFileName());
+
+            var result = Files.exists(expectedFile);
+
+            Assertions.assertTrue(result);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+}
