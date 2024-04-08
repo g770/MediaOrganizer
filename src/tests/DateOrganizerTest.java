@@ -193,5 +193,112 @@ public class DateOrganizerTest {
         }
     }
 
+    @Test
+    void testDateFormat5() {
+
+        // Create a file with a date format in its path
+        Path inputFile = null;
+        try {
+            Files.createDirectories(Paths.get(inputDir + File.separator + "1982-03-15 Vacation Photos"));
+            inputFile = Files.createFile(Path.of(inputDir + File.separator + "1982-03-15 Vacation Photos" + File.separator + "beach1.jpg"));
+
+
+            var rnd = new SecureRandom();
+            var fileContents = new byte[1024 * 1024];
+            rnd.nextBytes(fileContents);
+            Files.write(inputFile, fileContents);
+
+            var organizer = new DateOrganizer(inputDir.toString(), outputDir.toString(), false);
+
+            organizer.organizeFiles();
+
+            // Check if the file was moved to the correct directory
+            var expectedFile = Path.of(outputDir + File.separator + "1982-03-15 Vacation Photos" + File.separator + inputFile.getFileName());
+            var result = Files.exists(expectedFile);
+            Assertions.assertTrue(result);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    @Test
+    void testDateFormat6() {
+
+        // Create a file with a date format in its path
+        Path inputFile = null;
+        try {
+            Files.createDirectories(Paths.get(inputDir + File.separator + "1982-03-15 Vacation Photos"));
+
+            List<Path> files = new ArrayList<>();
+
+            for (int i = 1; i <= 100; i++) {
+                inputFile = Files.createFile(Path.of(inputDir + File.separator + "1982-03-15 Vacation Photos" + File.separator + "beach" + i + ".jpg"));
+                var rnd = new SecureRandom();
+                var fileContents = new byte[1024 * 1024];
+                rnd.nextBytes(fileContents);
+                Files.write(inputFile, fileContents);
+
+                // Add file to a list of files that were created
+                files.add(inputFile);
+
+            }
+
+            var organizer = new DateOrganizer(inputDir.toString(), outputDir.toString(), false);
+
+            organizer.organizeFiles();
+
+
+            for (var f : files) {
+                // Check if the file was moved to the correct directory
+                var expectedFile = Path.of(outputDir + File.separator + "1982-03-15 Vacation Photos" + File.separator + f.getFileName());
+                var result = Files.exists(expectedFile);
+                Assertions.assertTrue(result);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    @Test
+    void testDateFormat6PreviewMode() {
+
+        // Create a file with a date format in its path
+        Path inputFile = null;
+        try {
+            Files.createDirectories(Paths.get(inputDir + File.separator + "1982-03-15 Vacation Photos"));
+
+            List<Path> files = new ArrayList<>();
+
+            for (int i = 1; i <= 100; i++) {
+                inputFile = Files.createFile(Path.of(inputDir + File.separator + "1982-03-15 Vacation Photos" + File.separator + "beach" + i + ".jpg"));
+                var rnd = new SecureRandom();
+                var fileContents = new byte[1024 * 1024];
+                rnd.nextBytes(fileContents);
+                Files.write(inputFile, fileContents);
+
+                // Add file to a list of files that were created
+                files.add(inputFile);
+
+            }
+
+            var organizer = new DateOrganizer(inputDir.toString(), outputDir.toString(), true);
+
+            organizer.organizeFiles();
+
+            for (var f : files) {
+                // Check if the file was moved to the correct directory
+                var expectedFile = Path.of(outputDir + File.separator + "1982-03-15 Vacation Photos" + File.separator + f.getFileName());
+                var result = Files.exists(expectedFile);
+                Assertions.assertFalse(result);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 }
