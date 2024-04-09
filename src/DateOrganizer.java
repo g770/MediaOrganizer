@@ -60,7 +60,10 @@ public class DateOrganizer implements IFileOrganizer {
     // Input directory containing files to be organized
     private final String inputDirectory;
 
+    // For supporting preview mode
     private final Consumer<String> doCreateDirectories;
+
+    // For supporting preview mode
     private final BiConsumer<File, String> doFileCopy;
 
     // Lambdas to use for the preview mode

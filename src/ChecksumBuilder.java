@@ -97,10 +97,7 @@ public class ChecksumBuilder implements IChecksumBuilder {
             if (checksumBytes != null) {
                 var checksum = toHexString(checksumBytes);
                 logger.info("Checksum: {}", checksum);
-                if (!checksumMap.containsKey(checksum)) {
-                    checksumMap.put(checksum, new ArrayList<>());
-                }
-                checksumMap.get(checksum).add(new SimpleEntry<String, File>(inputDirName, f));
+                checksumMap.computeIfAbsent(checksum, k -> new ArrayList<>()).add(new SimpleEntry<>(inputDirName, f));
             }
         } else {
             logger.info("Skipped because it is a directory: {}", f.getAbsolutePath());
