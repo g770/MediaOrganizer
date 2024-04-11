@@ -90,7 +90,7 @@ public class Main {
                 }
 
                 if (cmdArgs.getAction().equals("deduplicate")) {
-                    var checksumBuilder = new ChecksumBuilder(cmdArgs.getInputDirs());
+                    var checksumBuilder = new ChecksumBuilder(cmdArgs.getInputDirs(), null);
                     checksumBuilder.calculateChecksums();
                     var checksumMap = checksumBuilder.getChecksumMap();
                     var deduplicator = new DeduplicateFiles(cmdArgs.getOutputDir(), cmdArgs.isPreview());

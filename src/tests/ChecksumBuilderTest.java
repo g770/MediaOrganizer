@@ -64,7 +64,7 @@ public class ChecksumBuilderTest {
             files.add(file);
         }
 
-        checksumBuilderWithDuplicates = new ChecksumBuilder(directories);
+        checksumBuilderWithDuplicates = new ChecksumBuilder(directories, null);
         checksumBuilderWithDuplicates.calculateChecksums();
     }
 
@@ -87,7 +87,7 @@ public class ChecksumBuilderTest {
             }
         }
 
-        checksumBuilderNoDuplicates = new ChecksumBuilder(directories);
+        checksumBuilderNoDuplicates = new ChecksumBuilder(directories, null);
         checksumBuilderNoDuplicates.calculateChecksums();
     }
 
@@ -144,17 +144,17 @@ public class ChecksumBuilderTest {
             assertEquals(fileToCreate, kvp.getValue().size());
         }
     }
-    
+
     @Test
     void testConstructorWithNullDirectories() {
-        ChecksumBuilder checksumBuilder = new ChecksumBuilder(null);
+        ChecksumBuilder checksumBuilder = new ChecksumBuilder(null, null);
         assertNotNull(checksumBuilder.getChecksumMap());
         assertTrue(checksumBuilder.getChecksumMap().isEmpty());
     }
 
     @Test
     void testConstructorWithEmptyDirectories() {
-        ChecksumBuilder checksumBuilder = new ChecksumBuilder(new ArrayList<>());
+        ChecksumBuilder checksumBuilder = new ChecksumBuilder(new ArrayList<>(), null);
         assertNotNull(checksumBuilder.getChecksumMap());
         assertTrue(checksumBuilder.getChecksumMap().isEmpty());
     }

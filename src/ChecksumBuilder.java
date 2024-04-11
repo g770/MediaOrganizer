@@ -32,6 +32,7 @@ import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.function.Function;
 
 /**
  * Class that implements the IChecksumBuilder interface to calculate checksums for files using MD5.
@@ -50,13 +51,18 @@ public class ChecksumBuilder implements IChecksumBuilder {
     // Map to store the calculated checksums and their corresponding files
     private final Map<String, List<AbstractMap.SimpleEntry<String, File>>> checksumMap = new HashMap<>();
 
+    // Function to calculate checksum
+    private final Function<File, Optional<byte[]>> checksumFunction;
+
     /**
      * Constructor for the ChecksumBuilder class.
      *
      * @param directories List of directories to scan for files.
+     * @param checksumFunction Optional function to calculate checksum. If null, default checksum function is used.
      */
-    public ChecksumBuilder(List<String> directories) {
+    public ChecksumBuilder(List<String> directories, Function<File, Optional<byte[]>> checksumFunction) {
         this.directories = Objects.requireNonNullElseGet(directories, ArrayList::new);
+        this.checksumFunction = Objects.requireNonNullElse(checksumFunction, ChecksumBuilder::defaultChecksumFunction);
     }
 
     /**
@@ -95,7 +101,7 @@ public class ChecksumBuilder implements IChecksumBuilder {
      */
     private void handleFile(String inputDirName, File f)  {
         logger.info("File: {}", f.getAbsolutePath());
-        var checksumBytes = checksum(f);
+        var checksumBytes = this.checksumFunction.apply(f);
 
         if (checksumBytes.isPresent()) {
             var checksum = toHexString(checksumBytes.get());
@@ -124,7 +130,7 @@ public class ChecksumBuilder implements IChecksumBuilder {
      * @param f The file for which the checksum is to be calculated.
      * @return The calculated checksum as a byte array.
      */
-    private static Optional<byte[]> checksum(File f)  {
+    private static Optional<byte[]> defaultChecksumFunction(File f)  {
         try {
             var md = MessageDigest.getInstance("MD5");
             try (var fis = new FileInputStream(f)) {

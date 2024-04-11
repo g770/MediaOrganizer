@@ -73,7 +73,7 @@ public class DeduplicateFilesTest {
             files.add(file);
         }
 
-        checksumBuilderWithDuplicates = new ChecksumBuilder(directories);
+        checksumBuilderWithDuplicates = new ChecksumBuilder(directories, null);
         checksumBuilderWithDuplicates.calculateChecksums();
     }
 
@@ -96,7 +96,7 @@ public class DeduplicateFilesTest {
             }
         }
 
-        checksumBuilderNoDuplicates = new ChecksumBuilder(directories);
+        checksumBuilderNoDuplicates = new ChecksumBuilder(directories, null);
         checksumBuilderNoDuplicates.calculateChecksums();
     }
 
