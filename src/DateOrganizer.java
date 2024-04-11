@@ -75,6 +75,12 @@ public class DateOrganizer implements IFileOrganizer {
      * @param destinationDirectory Directory where the organized files will be placed.
      */
     public DateOrganizer(String inputDirectory, String destinationDirectory, boolean previewMode) {
+
+        // Check that the inputDirectory and destinationDirectory are not null or empty
+        if (inputDirectory == null || inputDirectory.isEmpty() || destinationDirectory == null || destinationDirectory.isEmpty()) {
+            throw new IllegalArgumentException("Input and destination directories must be provided");
+        }
+
         this.inputDirectory = inputDirectory;
         this.destinationDirectory = destinationDirectory;
 

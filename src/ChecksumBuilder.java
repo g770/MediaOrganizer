@@ -79,9 +79,13 @@ public class ChecksumBuilder implements IChecksumBuilder {
     public void calculateChecksums() throws IOException {
         for (String dirName : directories) {
             logger.info("Iterating over files in directory: {}", dirName);
-            Files.walk(Paths.get(dirName)).forEach(path -> handleFile(dirName, path.toFile()));
+            Files.walk(Paths.get(dirName))
+                    .map(path -> path.toFile())
+                    .filter(file -> !file.isDirectory())
+                    .forEach(file -> handleFile(dirName, file));
         }
     }
+
 
     /**
      * Handles each file in the directory. If the file is not a directory, it calculates the checksum.
@@ -90,17 +94,13 @@ public class ChecksumBuilder implements IChecksumBuilder {
      * @param f The file for which the checksum is to be calculated.
      */
     private void handleFile(String inputDirName, File f)  {
-        if (!f.isDirectory()) {
-            logger.info("File: {}", f.getAbsolutePath());
-            var checksumBytes = checksum(f);
+        logger.info("File: {}", f.getAbsolutePath());
+        var checksumBytes = checksum(f);
 
-            if (checksumBytes != null) {
-                var checksum = toHexString(checksumBytes);
-                logger.info("Checksum: {}", checksum);
-                checksumMap.computeIfAbsent(checksum, k -> new ArrayList<>()).add(new SimpleEntry<>(inputDirName, f));
-            }
-        } else {
-            logger.info("Skipped because it is a directory: {}", f.getAbsolutePath());
+        if (checksumBytes.isPresent()) {
+            var checksum = toHexString(checksumBytes.get());
+            logger.info("Checksum: {}", checksum);
+            checksumMap.computeIfAbsent(checksum, k -> new ArrayList<>()).add(new SimpleEntry<>(inputDirName, f));
         }
     }
 
@@ -124,7 +124,7 @@ public class ChecksumBuilder implements IChecksumBuilder {
      * @param f The file for which the checksum is to be calculated.
      * @return The calculated checksum as a byte array.
      */
-    private static byte[] checksum(File f)  {
+    private static Optional<byte[]> checksum(File f)  {
         try {
             var md = MessageDigest.getInstance("MD5");
             try (var fis = new FileInputStream(f)) {
@@ -134,10 +134,10 @@ public class ChecksumBuilder implements IChecksumBuilder {
                     md.update(buffer, 0, nread);
                 }
             }
-            return md.digest();
+            return Optional.of(md.digest());
         } catch (Exception e) {
             logger.info("Caught exception during checksum: {}", e.getMessage());
-            return null;
+            return Optional.empty();
         }
     }
 }

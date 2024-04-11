@@ -144,5 +144,19 @@ public class ChecksumBuilderTest {
             assertEquals(fileToCreate, kvp.getValue().size());
         }
     }
+    
+    @Test
+    void testConstructorWithNullDirectories() {
+        ChecksumBuilder checksumBuilder = new ChecksumBuilder(null);
+        assertNotNull(checksumBuilder.getChecksumMap());
+        assertTrue(checksumBuilder.getChecksumMap().isEmpty());
+    }
+
+    @Test
+    void testConstructorWithEmptyDirectories() {
+        ChecksumBuilder checksumBuilder = new ChecksumBuilder(new ArrayList<>());
+        assertNotNull(checksumBuilder.getChecksumMap());
+        assertTrue(checksumBuilder.getChecksumMap().isEmpty());
+    }
 
 }

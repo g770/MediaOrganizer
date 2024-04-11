@@ -34,6 +34,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 
 public class DateOrganizerTest {
 
@@ -301,4 +303,31 @@ public class DateOrganizerTest {
         }
     }
 
+    @Test
+    void testConstructorWithNullInputDirectory() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            new DateOrganizer(null, "destinationDirectory", false);
+        });
+    }
+
+    @Test
+    void testConstructorWithEmptyInputDirectory() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            new DateOrganizer("", "destinationDirectory", false);
+        });
+    }
+
+    @Test
+    void testConstructorWithNullDestinationDirectory() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            new DateOrganizer("inputDirectory", null, false);
+        });
+    }
+
+    @Test
+    void testConstructorWithEmptyDestinationDirectory() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            new DateOrganizer("inputDirectory", "", false);
+        });
+    }
 }
