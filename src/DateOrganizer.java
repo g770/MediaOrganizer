@@ -34,6 +34,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Random;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,15 +45,43 @@ import java.util.regex.Pattern;
  */
 public class DateOrganizer implements IFileOrganizer {
 
+
+    public enum DateFormat {
+        YYYY_MM_DD("([0-9]{4})-([0-9]{2})-([0-9]{2}) ([,'a-zA-Z0-9 ]*)", 3, 2, 1),
+        DD_MM_YYYY("([0-9]{2})-([0-9]{2})-([0-9]{4}) ([,'a-zA-Z0-9 ]*)", 1, 2, 3);
+
+        private final Pattern pattern;
+        private final int yearGroup;
+        private final int monthGroup;
+        private final int dayGroup;
+        private final int descriptionGroup = 4;
+
+        DateFormat(String pattern, int dayGroup, int monthGroup, int yearGroup) {
+            this.pattern = Pattern.compile(pattern);
+            this.dayGroup = dayGroup;
+            this.monthGroup = monthGroup;
+            this.yearGroup = yearGroup;
+        }
+
+        public int getYearGroup() {
+            return yearGroup;
+        }
+
+        public int getMonthGroup() {
+            return monthGroup;
+        }
+
+        public int getDayGroup() {
+            return dayGroup;
+        }
+
+        public int getDescriptionGroup() {
+            return descriptionGroup;
+        }
+    }
+
     // Logger for logging information and error messages
     private static final Logger logger = LogManager.getLogger(DateOrganizer.class);
-
-    // Pattern for matching date format in file names (YYYY-MM-DD Description)
-    private static final Pattern pattern = Pattern.compile("([0-9]{4})-([0-9]{2})-([0-9]{2}) ([,'a-zA-Z0-9 ]*)");
-    private static final int MATCHGROUP_YEAR = 1;
-    private static final int MATCHGROUP_MONTH = 2;
-    private static final int MATCHGROUP_DAY = 3;
-    private static final int MATCHGROUP_DESCRIPTION = 4;
 
     // Destination directory for organized files
     private final String destinationDirectory;
@@ -66,7 +95,9 @@ public class DateOrganizer implements IFileOrganizer {
     // For supporting preview mode
     private final BiConsumer<File, String> doFileCopy;
 
-    // Lambdas to use for the preview mode
+    private BiFunction<File, Matcher, String> dateFormatter;
+
+    private final DateFormat dateFormat;
 
     /**
      * Constructor for the DateOrganizer class.
@@ -74,7 +105,7 @@ public class DateOrganizer implements IFileOrganizer {
      * @param inputDirectory Directory containing files to be organized.
      * @param destinationDirectory Directory where the organized files will be placed.
      */
-    public DateOrganizer(String inputDirectory, String destinationDirectory, boolean previewMode) {
+    public DateOrganizer(String inputDirectory, String destinationDirectory, DateFormat dateformat, boolean previewMode) {
 
         // Check that the inputDirectory and destinationDirectory are not null or empty
         if (inputDirectory == null || inputDirectory.isEmpty() || destinationDirectory == null || destinationDirectory.isEmpty()) {
@@ -83,6 +114,7 @@ public class DateOrganizer implements IFileOrganizer {
 
         this.inputDirectory = inputDirectory;
         this.destinationDirectory = destinationDirectory;
+        this.dateFormat = dateformat;
 
         if (previewMode) {
             logger.info("Running in preview mode");
@@ -91,7 +123,15 @@ public class DateOrganizer implements IFileOrganizer {
         } else {
             this.doCreateDirectories = this::createDirectories;
             this.doFileCopy = this::copyFiles;
+        }
 
+        switch(dateformat) {
+            case YYYY_MM_DD:
+                this.dateFormatter = this::handleDateFormatMatchYYYYMMDD;
+                break;
+            case DD_MM_YYYY:
+                this.dateFormatter = this::handleDateFormatMatchDDMMYYYY;
+                break;
         }
     }
 
@@ -127,9 +167,9 @@ public class DateOrganizer implements IFileOrganizer {
             var path = Paths.get(file.getPath()).getParent().toString();
 
             String outputDir;
-            var matcher = pattern.matcher(path);
+            var matcher = this.dateFormat.pattern.matcher(path);
             if (matcher.find()) {
-                outputDir = handleDateFormatMatch(file, matcher);
+                outputDir = this.dateFormatter.apply(file, matcher);
             } else {
                 // Path didn't work, look at the file modification date
                 logger.info("Using file modification date");
@@ -144,9 +184,7 @@ public class DateOrganizer implements IFileOrganizer {
             var finalFinalPath = outputDir + File.separator + file.getName();
 
             if ((new File(finalFinalPath)).exists()) {
-
                 logger.info("File already exists: {}", finalFinalPath);
-
                 finalFinalPath = handleExistingFile(file, outputDir);
             }
 
@@ -202,13 +240,13 @@ public class DateOrganizer implements IFileOrganizer {
      * @param matcher The matcher for the date format.
      * @return The output directory for the file.
      */
-    private String handleDateFormatMatch(File f, Matcher matcher) {
+    private String handleDateFormatMatchYYYYMMDD(File f, Matcher matcher) {
 
         logger.info("Using matching date format to make output path");
-        String year = matcher.group(MATCHGROUP_YEAR);
-        String month = matcher.group(MATCHGROUP_MONTH);
-        String day = matcher.group(MATCHGROUP_DAY);
-        String description = matcher.group(MATCHGROUP_DESCRIPTION);
+        String year = matcher.group(this.dateFormat.getYearGroup());
+        String month = matcher.group(this.dateFormat.getMonthGroup());
+        String day = matcher.group(this.dateFormat.getDayGroup());
+        String description = matcher.group(this.dateFormat.getDescriptionGroup());
 
         // Create subfolder in output directory named Year-Month-Day Description
         // and copy file
@@ -228,6 +266,39 @@ public class DateOrganizer implements IFileOrganizer {
         return folderName.toString();
     }
 
+    /**
+     * Handles the case when the file path matches the date format.
+     * Constructs the output directory based on the matched date.
+     *
+     * @param f The file to be handled.
+     * @param matcher The matcher for the date format.
+     * @return The output directory for the file.
+     */
+    private String handleDateFormatMatchDDMMYYYY(File f, Matcher matcher) {
+
+        logger.info("Using matching date format to make output path");
+        String year = matcher.group(this.dateFormat.getYearGroup());
+        String month = matcher.group(this.dateFormat.getMonthGroup());
+        String day = matcher.group(this.dateFormat.getDayGroup());
+        String description = matcher.group(this.dateFormat.getDescriptionGroup());
+
+        // Create subfolder in output directory named Year-Month-Day Description
+        // and copy file
+        StringBuilder folderName = new StringBuilder();
+        folderName.append(destinationDirectory);
+        folderName.append(File.separator);
+        folderName.append(day);
+        folderName.append("-");
+        folderName.append(month);
+        folderName.append("-");
+        folderName.append(year);
+        folderName.append(" ");
+        folderName.append(description);
+
+        logger.info("Output: {}{}{}", folderName, File.separator, f.getName());
+
+        return folderName.toString();
+    }
     /**
      * Handles the case when the file path does not match the date format.
      * Constructs the output directory based on the file modification date.

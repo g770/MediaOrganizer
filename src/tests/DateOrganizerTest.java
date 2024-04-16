@@ -70,7 +70,7 @@ public class DateOrganizerTest {
 
 
     @Test
-    void testDateFormat1() {
+    void testDateFormat1_YYYY_MM_DD() {
 
         // Create a file with a date format in its path
         Path inputFile = null;
@@ -84,7 +84,7 @@ public class DateOrganizerTest {
         rnd.nextBytes(fileContents);
         Files.write(inputFile, fileContents);
 
-        var organizer = new DateOrganizer(inputDir.toString(), outputDir.toString(), false);
+        var organizer = new DateOrganizer(inputDir.toString(), outputDir.toString(), DateOrganizer.DateFormat.YYYY_MM_DD, false);
 
             organizer.organizeFiles();
 
@@ -100,7 +100,7 @@ public class DateOrganizerTest {
 
 
     @Test
-    void testDateFormat2() {
+    void testDateFormat2_YYYY_MM_DD() {
 
         // Create a file with a date format in its path, without the description part
         Path inputFile = null;
@@ -114,7 +114,7 @@ public class DateOrganizerTest {
             rnd.nextBytes(fileContents);
             Files.write(inputFile, fileContents);
 
-            var organizer = new DateOrganizer(inputDir.toString(), outputDir.toString(), false);
+            var organizer = new DateOrganizer(inputDir.toString(), outputDir.toString(), DateOrganizer.DateFormat.YYYY_MM_DD, false);
 
             organizer.organizeFiles();
 
@@ -132,7 +132,7 @@ public class DateOrganizerTest {
 
 
     @Test
-    void testDateFormat3() {
+    void testDateFormat3_YYYY_MM_DD() {
 
         // Create a file in a directory tree, but put the date format in the file name
         Path inputFile = null;
@@ -146,7 +146,7 @@ public class DateOrganizerTest {
             rnd.nextBytes(fileContents);
             Files.write(inputFile, fileContents);
 
-            var organizer = new DateOrganizer(inputDir.toString(), outputDir.toString(), false);
+            var organizer = new DateOrganizer(inputDir.toString(), outputDir.toString(), DateOrganizer.DateFormat.YYYY_MM_DD, false);
 
             organizer.organizeFiles();
 
@@ -163,7 +163,7 @@ public class DateOrganizerTest {
     }
 
     @Test
-    void testDateFormat4() {
+    void testDateFormat4_YYYY_MM_DD() {
 
         // Create a file in a directory tree, but put the date format in the file name
         Path inputFile = null;
@@ -177,7 +177,7 @@ public class DateOrganizerTest {
             rnd.nextBytes(fileContents);
             Files.write(inputFile, fileContents);
 
-            var organizer = new DateOrganizer(inputDir.toString(), outputDir.toString(), false);
+            var organizer = new DateOrganizer(inputDir.toString(), outputDir.toString(), DateOrganizer.DateFormat.YYYY_MM_DD, false);
 
             organizer.organizeFiles();
 
@@ -196,7 +196,7 @@ public class DateOrganizerTest {
     }
 
     @Test
-    void testDateFormat5() {
+    void testDateFormat5_YYYY_MM_DD() {
 
         // Create a file with a date format in its path
         Path inputFile = null;
@@ -210,7 +210,7 @@ public class DateOrganizerTest {
             rnd.nextBytes(fileContents);
             Files.write(inputFile, fileContents);
 
-            var organizer = new DateOrganizer(inputDir.toString(), outputDir.toString(), false);
+            var organizer = new DateOrganizer(inputDir.toString(), outputDir.toString(), DateOrganizer.DateFormat.YYYY_MM_DD, false);
 
             organizer.organizeFiles();
 
@@ -226,7 +226,7 @@ public class DateOrganizerTest {
 
 
     @Test
-    void testDateFormat6() {
+    void testDateFormat6_YYYY_MM_DD() {
 
         // Create a file with a date format in its path
         Path inputFile = null;
@@ -247,7 +247,7 @@ public class DateOrganizerTest {
 
             }
 
-            var organizer = new DateOrganizer(inputDir.toString(), outputDir.toString(), false);
+            var organizer = new DateOrganizer(inputDir.toString(), outputDir.toString(), DateOrganizer.DateFormat.YYYY_MM_DD, false);
 
             organizer.organizeFiles();
 
@@ -266,7 +266,7 @@ public class DateOrganizerTest {
 
 
     @Test
-    void testDateFormat6PreviewMode() {
+    void testDateFormat6PreviewMode_YYYY_MM_DD() {
 
         // Create a file with a date format in its path
         Path inputFile = null;
@@ -287,7 +287,7 @@ public class DateOrganizerTest {
 
             }
 
-            var organizer = new DateOrganizer(inputDir.toString(), outputDir.toString(), true);
+            var organizer = new DateOrganizer(inputDir.toString(), outputDir.toString(), DateOrganizer.DateFormat.YYYY_MM_DD, true);
 
             organizer.organizeFiles();
 
@@ -306,28 +306,233 @@ public class DateOrganizerTest {
     @Test
     void testConstructorWithNullInputDirectory() {
         assertThrows(IllegalArgumentException.class, () -> {
-            new DateOrganizer(null, "destinationDirectory", false);
+            new DateOrganizer(null, "destinationDirectory", DateOrganizer.DateFormat.YYYY_MM_DD, false);
         });
     }
 
     @Test
     void testConstructorWithEmptyInputDirectory() {
         assertThrows(IllegalArgumentException.class, () -> {
-            new DateOrganizer("", "destinationDirectory", false);
+            new DateOrganizer("", "destinationDirectory", DateOrganizer.DateFormat.YYYY_MM_DD, false);
         });
     }
 
     @Test
     void testConstructorWithNullDestinationDirectory() {
         assertThrows(IllegalArgumentException.class, () -> {
-            new DateOrganizer("inputDirectory", null, false);
+            new DateOrganizer("inputDirectory", null, DateOrganizer.DateFormat.YYYY_MM_DD, false);
         });
     }
 
     @Test
     void testConstructorWithEmptyDestinationDirectory() {
         assertThrows(IllegalArgumentException.class, () -> {
-            new DateOrganizer("inputDirectory", "", false);
+            new DateOrganizer("inputDirectory", "", DateOrganizer.DateFormat.YYYY_MM_DD, false);
         });
     }
+
+
+
+    @Test
+    void testDateFormat1_DD_MM_YYYY() {
+
+        // Create a file with a date format in its path
+        Path inputFile = null;
+        try {
+            Files.createDirectories(Paths.get(inputDir + File.separator + "10-01-2024 Description"));
+            inputFile = Files.createFile(Path.of(inputDir + File.separator + "10-01-2024 Description" + File.separator + "TestFile.txt"));
+
+
+            var rnd = new SecureRandom();
+            var fileContents = new byte[1024 * 1024];
+            rnd.nextBytes(fileContents);
+            Files.write(inputFile, fileContents);
+
+            var organizer = new DateOrganizer(inputDir.toString(), outputDir.toString(), DateOrganizer.DateFormat.DD_MM_YYYY, false);
+
+            organizer.organizeFiles();
+
+            // Check if the file was moved to the correct directory
+            var expectedFile = Path.of(outputDir + File.separator + "10-01-2024 Description" + File.separator + inputFile.getFileName());
+            var result = Files.exists(expectedFile);
+            Assertions.assertTrue(result);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    @Test
+    void testDateFormat2_DD_MM_YYYY() {
+
+        // Create a file with a date format in its path, without the description part
+        Path inputFile = null;
+        try {
+            Files.createDirectories(Paths.get(inputDir + File.separator + "10-01-2024"));
+            inputFile = Files.createFile(Path.of(inputDir + File.separator + "10-01-2024" + File.separator + "TestFile.txt"));
+
+
+            var rnd = new SecureRandom();
+            var fileContents = new byte[1024 * 1024];
+            rnd.nextBytes(fileContents);
+            Files.write(inputFile, fileContents);
+
+            var organizer = new DateOrganizer(inputDir.toString(), outputDir.toString(), DateOrganizer.DateFormat.DD_MM_YYYY, false);
+
+            organizer.organizeFiles();
+
+            // Check if the file was moved to the correct directory
+            var expectedFile = Path.of(outputDir + File.separator + "10-01-2024" + File.separator + inputFile.getFileName());
+            var result = Files.exists(expectedFile);
+
+            // This should be false, in this case the pattern would not match and modification date would be used
+            Assertions.assertFalse(result);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    @Test
+    void testDateFormat3_DD_MM_YYYY() {
+
+        // Create a file in a directory tree, but put the date format in the file name
+        Path inputFile = null;
+        try {
+            Files.createDirectories(Paths.get(inputDir + File.separator + "My Nifty Photos"));
+            inputFile = Files.createFile(Path.of(inputDir + File.separator + "My Nifty Photos" + File.separator + "10-03-2023 Vacation.jpg"));
+
+
+            var rnd = new SecureRandom();
+            var fileContents = new byte[1024 * 1024];
+            rnd.nextBytes(fileContents);
+            Files.write(inputFile, fileContents);
+
+            var organizer = new DateOrganizer(inputDir.toString(), outputDir.toString(), DateOrganizer.DateFormat.DD_MM_YYYY, false);
+
+            organizer.organizeFiles();
+
+            // Check if the file was moved to the correct directory
+            var expectedFile = Path.of(outputDir + File.separator + "10-03-2023" + File.separator + inputFile.getFileName());
+            var result = Files.exists(expectedFile);
+
+            // This should be false, in this case the pattern would not match and modification date would be used
+            Assertions.assertFalse(result);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    @Test
+    void testDateFormat4_DD_MM_YYYY() {
+
+        // Create a file with a date format in its path
+        Path inputFile = null;
+        try {
+            Files.createDirectories(Paths.get(inputDir + File.separator + "15-03-1982 Vacation Photos"));
+            inputFile = Files.createFile(Path.of(inputDir + File.separator + "15-03-1982 Vacation Photos" + File.separator + "beach1.jpg"));
+
+
+            var rnd = new SecureRandom();
+            var fileContents = new byte[1024 * 1024];
+            rnd.nextBytes(fileContents);
+            Files.write(inputFile, fileContents);
+
+            var organizer = new DateOrganizer(inputDir.toString(), outputDir.toString(), DateOrganizer.DateFormat.DD_MM_YYYY, false);
+
+            organizer.organizeFiles();
+
+            // Check if the file was moved to the correct directory
+            var expectedFile = Path.of(outputDir + File.separator + "15-03-1982 Vacation Photos" + File.separator + inputFile.getFileName());
+            var result = Files.exists(expectedFile);
+            Assertions.assertTrue(result);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    @Test
+    void testDateFormat6_DD_MM_YYYY() {
+
+        // Create a file with a date format in its path
+        Path inputFile = null;
+        try {
+            Files.createDirectories(Paths.get(inputDir + File.separator + "15-03-1982 Vacation Photos"));
+
+            List<Path> files = new ArrayList<>();
+
+            for (int i = 1; i <= 100; i++) {
+                inputFile = Files.createFile(Path.of(inputDir + File.separator + "15-03-1982 Vacation Photos" + File.separator + "beach" + i + ".jpg"));
+                var rnd = new SecureRandom();
+                var fileContents = new byte[1024 * 1024];
+                rnd.nextBytes(fileContents);
+                Files.write(inputFile, fileContents);
+
+                // Add file to a list of files that were created
+                files.add(inputFile);
+
+            }
+
+            var organizer = new DateOrganizer(inputDir.toString(), outputDir.toString(), DateOrganizer.DateFormat.DD_MM_YYYY, false);
+
+            organizer.organizeFiles();
+
+
+            for (var f : files) {
+                // Check if the file was moved to the correct directory
+                var expectedFile = Path.of(outputDir + File.separator + "15-03-1982 Vacation Photos" + File.separator + f.getFileName());
+                var result = Files.exists(expectedFile);
+                Assertions.assertTrue(result);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    @Test
+    void testDateFormat6PreviewMode_DD_MM_YYYY() {
+
+        // Create a file with a date format in its path
+        Path inputFile = null;
+        try {
+            Files.createDirectories(Paths.get(inputDir + File.separator + "15-03-1982 Vacation Photos"));
+
+            List<Path> files = new ArrayList<>();
+
+            for (int i = 1; i <= 100; i++) {
+                inputFile = Files.createFile(Path.of(inputDir + File.separator + "15-03-1982 Vacation Photos" + File.separator + "beach" + i + ".jpg"));
+                var rnd = new SecureRandom();
+                var fileContents = new byte[1024 * 1024];
+                rnd.nextBytes(fileContents);
+                Files.write(inputFile, fileContents);
+
+                // Add file to a list of files that were created
+                files.add(inputFile);
+
+            }
+
+            var organizer = new DateOrganizer(inputDir.toString(), outputDir.toString(), DateOrganizer.DateFormat.DD_MM_YYYY, true);
+
+            organizer.organizeFiles();
+
+            for (var f : files) {
+                // Check if the file was moved to the correct directory
+                var expectedFile = Path.of(outputDir + File.separator + "15-03-1982 Vacation Photos" + File.separator + f.getFileName());
+                var result = Files.exists(expectedFile);
+                Assertions.assertFalse(result);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }

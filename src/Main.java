@@ -24,6 +24,7 @@
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -39,10 +40,13 @@ public class Main {
         private final String outputDir;
         private final boolean preview;
 
-        public CommandLineArguments(String action, List<String> inputDirs, String outputDir, boolean preview) {
+        private final DateOrganizer.DateFormat dateFormat;
+
+        public CommandLineArguments(String action, List<String> inputDirs, String outputDir, DateOrganizer.DateFormat dateFormat, boolean preview) {
             this.action = action;
             this.inputDirs = inputDirs;
             this.outputDir = outputDir;
+            this.dateFormat = dateFormat;
             this.preview = preview;
         }
 
@@ -61,6 +65,10 @@ public class Main {
         public boolean isPreview() {
             return preview;
         }
+
+        public DateOrganizer.DateFormat getDateFormat() {
+            return dateFormat;
+        }
         public boolean isValid() {
             if (action == null || (!action.equals("deduplicate") && !action.equals("organize"))) {
                 return false;
@@ -73,6 +81,7 @@ public class Main {
             }
             return true;
         }
+
     }
     private static final Logger logger = LogManager.getLogger(Main.class);
 
@@ -98,7 +107,7 @@ public class Main {
 
                 } else if (cmdArgs.getAction().equals("organize")) {
                     for (String inputDir : cmdArgs.getInputDirs()) {
-                        var dateOrganizer = new DateOrganizer(inputDir, cmdArgs.getOutputDir(), cmdArgs.isPreview());
+                        var dateOrganizer = new DateOrganizer(inputDir, cmdArgs.getOutputDir(), cmdArgs.getDateFormat(), cmdArgs.isPreview());
                         dateOrganizer.organizeFiles();
                     }
                 }
@@ -110,11 +119,12 @@ public class Main {
 
     }
 
-    public static CommandLineArguments processArgs(String[] args) {
+    private static CommandLineArguments processArgs(String[] args) {
         String action = null;
         List<String> inputDirs = new ArrayList<>();
         String outputDir = null;
         boolean preview = false;
+        DateOrganizer.DateFormat dateFormat = DateOrganizer.DateFormat.YYYY_MM_DD;
 
         for (int i = 0; i < args.length; i++) {
             switch (args[i]) {
@@ -136,6 +146,13 @@ public class Main {
                 case "-p":
                     preview = true;
                     break;
+                case "-d":
+                    if (i + 1 < args.length) {
+                        var dateFormatArg = args[++i];
+                        dateFormat = getDateFormat(dateFormatArg);
+                        if (dateFormat == null) return null;
+                    }
+                    break;
                 case "-h":
                     printHelp();
                     return null;
@@ -144,15 +161,33 @@ public class Main {
             }
         }
 
-        return new CommandLineArguments(action, inputDirs, outputDir, preview);
+        return new CommandLineArguments(action, inputDirs, outputDir, dateFormat, preview);
     }
 
-    public static void printHelp() {
+
+    private static DateOrganizer.DateFormat getDateFormat(String dateFormatArg) {
+        DateOrganizer.DateFormat dateFormat = DateOrganizer.DateFormat.YYYY_MM_DD;
+        switch (dateFormatArg) {
+            case "YYYYMMDD":
+                dateFormat = DateOrganizer.DateFormat.YYYY_MM_DD;
+                break;
+            case "DDMMYYYY":
+                dateFormat = DateOrganizer.DateFormat.DD_MM_YYYY;
+                break;
+            default:
+                logger.error("Invalid date format, using default: {}", dateFormatArg);
+                return null;
+        }
+        return dateFormat;
+    }
+
+    private static void printHelp() {
         logger.info("Usage: java -j PhotoOrganizer.jar -a <action> -o <outputDir> -i <inputDir1> -i <inputDir2> ...");
         logger.info("Options:");
         logger.info("\t-a <action>\t\tThe action to perform. Can be either 'organize' or 'deduplicate'.");
         logger.info("\t-o <outputDir>\t\tThe output directory.");
         logger.info("\t-i <inputDir>\t\tThe input directory. This option can be specified multiple times for multiple input directories.");
+        logger.info("\t-d <dateFormat>\t\tThe date format to use when organizing files. Can be either 'YYYYMMDD' or 'DDMMYYYY'. Defaults to YYYMMDD.");
         logger.info("\t-p\t\t\tPreview mode. Do not perform any file operations, only print what would be done.");
         logger.info("\t-h\t\t\tPrint this help message.");
     }
