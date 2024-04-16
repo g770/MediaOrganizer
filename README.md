@@ -7,6 +7,7 @@ The organize functionality organizes the files into directories using a date for
 
 
 ## USAGE
+To get a list of the command line parameters and usage, start with the -h help option.
 
 ````
 java -j MediaOrganizer.jar -h
