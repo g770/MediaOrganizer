@@ -36,6 +36,12 @@
             <AppenderRef ref="FileOutput"/>
             -->
         </Logger>
+        <Logger name="CommandLineArguments" level="trace" additivity="false">
+            <AppenderRef ref="Console"/>
+            <!--
+            <AppenderRef ref="FileOutput"/>
+            -->
+        </Logger>
         <Root level= "error">
             <AppenderRef ref="Console"/>
             <!--
