@@ -49,10 +49,10 @@ public class DateOrganizer implements IFileOrganizer {
 
     // Pattern for matching date format in file names (YYYY-MM-DD Description)
     private static final Pattern pattern = Pattern.compile("([0-9]{4})-([0-9]{2})-([0-9]{2}) ([,'a-zA-Z0-9 ]*)");
-    public static final int MATCHGROUP_YEAR = 1;
-    public static final int MATCHGROUP_MONTH = 2;
-    public static final int MATCHGROUP_DAY = 3;
-    public static final int MATCHGROUP_DESCRIPTION = 4;
+    private static final int MATCHGROUP_YEAR = 1;
+    private static final int MATCHGROUP_MONTH = 2;
+    private static final int MATCHGROUP_DAY = 3;
+    private static final int MATCHGROUP_DESCRIPTION = 4;
 
     // Destination directory for organized files
     private final String destinationDirectory;
