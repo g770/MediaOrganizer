@@ -9,11 +9,5 @@ The organize functionality organizes the files into directories using a date for
 ## USAGE
 
 ````
-java -j PhotoOrganizer.jar -a <action> -o <outputDir> -i <inputDir1> -i <inputDir2> ...
-        Options:
-        -a <action> The action to perform. Can be either 'organize' or 'deduplicate'.
-        -o <outputDir> The output directory.
-        -i <inputDir> The input directory. This option can be specified multiple times for multiple input directories.
-        -p Preview mode. Do not perform any file operations, only print what would be done.
-        -h Print a help message.
+java -j MediaOrganizer.jar -h
 ````
