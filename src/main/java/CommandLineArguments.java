@@ -83,6 +83,7 @@ public class CommandLineArguments {
 
         if (args == null || args.length == 0) {
             logger.error("No arguments provided.");
+            printHelp();
             return Optional.empty();
         }
 

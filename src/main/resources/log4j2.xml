@@ -42,7 +42,7 @@
             <AppenderRef ref="FileOutput"/>
             -->
         </Logger>
-        <Root level= "error">
+        <Root level= "info">
             <AppenderRef ref="Console"/>
             <!--
             <AppenderRef ref="FileOutput"/>
