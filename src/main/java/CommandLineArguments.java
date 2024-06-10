@@ -146,7 +146,6 @@ public class CommandLineArguments {
     }
 
     public static void printHelp() {
-        logger.info("Usage: java -j MediaOrganizer.jar -a <action> -o <outputDir> -i <inputDir1> -i <inputDir2> ...");
         logger.info("Options:");
         logger.info("\t-a <action>\t\tThe action to perform. Can be either 'organize' or 'deduplicate'.");
         logger.info("\t-o <outputDir>\t\tThe output directory.");
